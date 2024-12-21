@@ -1,33 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-//import axios from 'axios';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(''); 
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        // try {
-        //     const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+        setLoading(true);
 
-        //     // Save user data in local storage
-        //     console.log(data.username)
-        //     localStorage.setItem('user', JSON.stringify({ username: data.username, token: data.token }));
+        setTimeout(() => {
+            if (email === 'test@example.com' && password === 'password123') {
+                localStorage.setItem('user', JSON.stringify({ username: 'Test User', token: 'fake-jwt-token' }));
+                navigate('/dashboard');
+            } else {
+                setError('Invalid email or password.');
+            }
+            setLoading(false);
+        }, 1500);
+    };
 
-        //     // Navigate to dashboard
-        //     navigate('/dashboard');
-        // } catch (error) {
-        //     if (error.response && error.response.data && error.response.data.message) {
-        //         setError(error.response.data.message); 
-        //         navigate('/login');
-        //     } else {
-        //         setError('An unexpected error occurred. Please try again later.');
-        //         navigate('/login');
-        //     }
-        // }
+    const isEmailValid = (email) => {
+        const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return regex.test(email);
     };
 
     return (
@@ -36,15 +34,37 @@ const Login = () => {
             <form onSubmit={handleLogin}>
                 <div className="mb-3">
                     <label htmlFor="email" className="form-label">Email address</label>
-                    <input type="email" className="form-control" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <input
+                        type="email"
+                        className="form-control"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    {!isEmailValid(email) && email && (
+                        <small className="text-danger">Please enter a valid email address.</small>
+                    )}
                 </div>
                 <div className="mb-3">
                     <label htmlFor="password" className="form-label">Password</label>
-                    <input type="password" className="form-control" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    <input
+                        type="password"
+                        className="form-control"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                    {password.length < 6 && password && (
+                        <small className="text-danger">Password should be at least 6 characters long.</small>
+                    )}
                 </div>
-                <button type="submit" className="btn btn-primary">Login</button>
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                    {loading ? 'Logging in...' : 'Login'}
+                </button>
             </form>
-            {error && <p className="text-danger mt-3">{error}</p>} {/* Display error message */}
+            {error && <p className="text-danger mt-3">{error}</p>}
             <p>Don't have an account? <a href="/register">Register</a></p>
         </div>
     );
